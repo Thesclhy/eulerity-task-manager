@@ -20,7 +20,7 @@ It includes:
 Clone the repository and change into the project directory:
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Thesclhy/eulerity-task-manager.git
 cd task_manager
 ```
 
