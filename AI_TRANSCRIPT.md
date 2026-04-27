@@ -1,14 +1,23 @@
 # AI Transcript
 
 Tool used: Codex  
-Project: Eulerity Backend Engineering Intern Take-Home  
-Workflow summary:
+Project: Eulerity Backend Engineering Intern Take-Home
 
-- Used Codex as the primary builder.
-- Defined project constraints through AGENTS.md and docs/PLAN.md.
-- Asked Codex to create tests first.
-- Iteratively implemented CRUD, AI endpoint, UI, and README.
-- Used test failures and manual API checks to guide fixes.
+## Transcript note
+
+This is a curated Markdown transcript of my Codex-assisted build session. Codex was the primary builder used to scaffold, implement, test, debug, and finalize the project.
+
+I also used ChatGPT separately for meta-review and prompt design. ChatGPT did not directly modify the codebase, so this transcript focuses on the Codex build session, my prompts to Codex, Codex's implementation summaries, and my manual review decisions.
+
+## Workflow summary
+
+- Used Codex as the primary builder while I acted as reviewer and project lead.
+- Defined project constraints through `AGENTS.md` and `docs/PLAN.md`.
+- Asked Codex to create tests before implementing the main application logic.
+- Iteratively implemented the CRUD API, AI-powered endpoint, static UI, tests, and README.
+- Reviewed Codex output, corrected a weak test strategy, and added a true end-to-end CRUD integration test.
+- Manually tested the AI endpoint, found a past-date issue from the real AI path, and directed Codex to add prompt and validation guardrails.
+- Verified tests, environment-variable behavior, ignored files, and final git state before submission.
 
 ---
 
@@ -115,7 +124,7 @@ After reviewing the generated tests, I noticed that the CRUD "integration" test 
 
 I asked Codex to add a true `@SpringBootTest` + `@AutoConfigureMockMvc` CRUD integration test using the real service/repository/H2 stack, while keeping the AI endpoint test mocked.
 
-### my prompt
+### My prompt
 
 The API implementation is already in place. Please review the test suite against the take-home requirements.
 
@@ -449,7 +458,7 @@ What changed:
 I ran ./mvnw test after the documentation/config changes. Result: Tests run: 17, Failures: 0, Errors: 0,
 Skipped: 0, BUILD SUCCESS.
 
-### my prompt
+### My prompt
 
 Update README.md to clarify optional AI setup.
 
@@ -554,3 +563,254 @@ Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 
 Note: The client still emits the same compile-time deprecation warning from the JSON library usage, but it does not affect runtime behavior or test results.
+
+## 9. Update git and finalize project
+
+### My prompt
+
+Review the git state and prepare the repository for submission.
+
+Please:
+
+1. Run git status.
+2. Check that .env, target/, .codex/, and any secrets are not staged.
+3. Confirm .env is ignored and .env.example is tracked.
+4. Summarize the files that should be committed.
+5. Do not commit yet unless I explicitly ask.
+6. Do not edit AI_TRANSCRIPT.md.
+
+### codex response:
+
+I’ve confirmed the ignore rules and checked for obvious secret material. The one thing
+standing out for submission is AI_TRANSCRIPT.md: it’s modified and not ignored, but you
+explicitly asked me not to keep changing it, so it should stay out of the submission
+unless you want it included.
+
+• Current git state from git status --short:
+
+- Modified:
+  - .gitignore
+  - AI_TRANSCRIPT.md
+  - src/main/java/com/eulerity/task_manager/dto/TaskSuggestResponse.java
+  - src/main/java/com/eulerity/task_manager/service/TaskSuggestionServiceImpl.java
+  - src/test/java/com/eulerity/task_manager/controller/
+    TaskSuggestionControllerTest.java
+- Untracked:
+  - .env.example
+  - README.md
+  - src/main/java/com/eulerity/task_manager/service/OpenAiResponsesApi.java
+  - src/main/java/com/eulerity/task_manager/service/OpenAiResponsesHttpApi.java
+  - src/main/java/com/eulerity/task_manager/service/OpenAiTaskSuggestionClient.java
+  - src/main/java/com/eulerity/task_manager/service/TaskSuggestionClient.java
+  - src/main/java/com/eulerity/task_manager/service/TaskSuggestionFallbackParser.java
+  - src/main/resources/static/
+  - src/test/java/com/eulerity/task_manager/controller/TaskCrudIntegrationTest.java
+  - src/test/java/com/eulerity/task_manager/service/OpenAiTaskSuggestionClientTest.java
+  - src/test/java/com/eulerity/task_manager/service/TaskSuggestionServiceImplTest.java
+  - src/test/resources/
+
+Ignored and not staged:
+
+- .env is ignored via .gitignore
+- target/ is ignored via .gitignore
+- .codex/ is ignored via .gitignore
+
+Confirmation:
+
+- .env is ignored: yes
+- .env.example is tracked yet: not yet, but it is untracked and ready to add
+- Any obvious secrets staged: none found
+- Any real API key strings found in project files: none found
+- One caution: AI_TRANSCRIPT.md is modified and not ignored, so it would be easy to
+  include by accident
+
+Files that should be committed for submission:
+
+- .gitignore
+- .env.example
+- README.md
+- docs/API_CONTRACT.md
+- docs/PLAN.md
+- pom.xml
+- mvnw
+- mvnw.cmd
+- all source files under src/main/java/...
+- static UI under src/main/resources/static/index.html
+- all test files under src/test/java/...
+- src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker
+
+Files that should likely stay out of the submission:
+
+- .env
+- target/
+- .codex/
+- HELP.md
+- AI_TRANSCRIPT.md unless you explicitly want it included
+
+I have not committed anything.
+
+### My prompt
+
+Correction: AI_TRANSCRIPT.md must be included in the submission. I only asked you not to edit it automatically.
+
+Please do not modify AI_TRANSCRIPT.md, but include it in the list of files to commit.
+
+Re-check git status and confirm the final commit set should include:
+
+- AI_TRANSCRIPT.md
+- README.md
+- .env.example
+- .gitignore
+- docs/
+- src/
+- pom.xml
+- mvnw
+- mvnw.cmd
+- .mvn/wrapper/
+
+And should exclude:
+
+- .env
+- target/
+- .codex/
+- any API keys
+
+Do not commit yet.
+
+### codex response
+
+Re-checked the git state and your corrected submission scope is consistent.
+
+Current status:
+
+- Modified:
+  - .gitignore
+  - AI_TRANSCRIPT.md
+  - src/main/java/com/eulerity/task_manager/dto/TaskSuggestResponse.java
+  - src/main/java/com/eulerity/task_manager/service/TaskSuggestionServiceImpl.java
+  - src/test/java/com/eulerity/task_manager/controller/
+    TaskSuggestionControllerTest.java
+- Untracked:
+  - .env.example
+  - README.md
+  - new files under src/main/java/...
+  - src/main/resources/static/
+  - new files under src/test/java/...
+  - src/test/resources/
+
+Confirmed include set should contain:
+
+- AI_TRANSCRIPT.md
+- README.md
+- .env.example
+- .gitignore
+- docs/
+- src/
+- pom.xml
+- mvnw
+- mvnw.cmd
+- .mvn/wrapper/
+
+Confirmed exclude set should contain:
+
+- .env
+- target/
+- .codex/
+- any real API keys
+
+Ignore checks:
+
+- .env is ignored
+- target/ is ignored
+- .codex/ is ignored
+
+Wrapper check:
+
+- .mvn/wrapper/maven-wrapper.properties is present and should be included
+- .mvn/wrapper/maven-wrapper.jar is not present in the current working tree
+
+Secret check:
+
+- No real API key or private key material was found
+- The only OPENAI_API_KEY match is the placeholder example in README.md
+
+I have not modified or committed anything.
+
+### My prompt
+
+Please prepare and create the final git commit.
+
+Before committing:
+
+1. Run git status.
+2. Stage only the intended submission files:
+   - AI_TRANSCRIPT.md
+   - README.md
+   - .env.example
+   - .gitignore
+   - docs/
+   - src/
+   - pom.xml
+   - mvnw
+   - mvnw.cmd
+   - .mvn/wrapper/
+3. Do not stage or commit:
+   - .env
+   - target/
+   - .codex/
+   - any API keys or secrets
+4. Run git diff --cached --name-only and confirm the staged files.
+5. Run unset OPENAI_API_KEY; unset OPENAI_MODEL; ./mvnw test.
+6. If tests pass and no secrets are staged, create this commit:
+
+Complete task manager take-home implementation
+
+After committing, run git status and summarize the result.
+Do not edit AI_TRANSCRIPT.md.
+
+### codex response
+
+The final submission commit has been created:
+
+- Commit: bd02b0b
+- Message: Complete task manager take-home implementation
+
+What I verified before committing:
+
+- Only the intended submission files were staged
+- .env, target/, and .codex/ were not staged
+- no real API keys or secret material were found
+- unset OPENAI_API_KEY; unset OPENAI_MODEL; ./mvnw test passed:
+  - Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
+  - BUILD SUCCESS
+
+Post-commit git state:
+
+- git status --short: clean working tree
+- ignored files still excluded:
+  - .codex
+  - .env
+  - HELP.md
+  - target/
+
+One important note: git commit recorded 17 changed files. That means some unchanged-but-
+intended submission paths you listed, such as existing docs/, pom.xml, mvnw, mvnw.cmd,
+and .mvn/wrapper/, were not part of this commit because they had no changes relative to
+the previous git history. They remain in the repository, but they were not included as
+new commit content because there was nothing new to record for them.
+
+## 10. Final manual review
+
+### My review
+
+After the final commit, I confirmed the repository was clean and that the intended submission files were tracked.
+
+I also verified:
+
+- `AI_TRANSCRIPT.md` is included in the repository.
+- `.env` is ignored and not committed.
+- `.env.example` is included as a safe template.
+- `target/` and `.codex/` are ignored.
+- The final test suite passes without/with `OPENAI_API_KEY`:
+  - Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
+  - BUILD SUCCESS
