@@ -21,7 +21,7 @@ Clone the repository and change into the project directory:
 
 ```bash
 git clone https://github.com/Thesclhy/eulerity-task-manager.git
-cd task_manager
+cd eulerity-task-manager
 ```
 
 ## Run Locally
