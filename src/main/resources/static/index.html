@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            line-height: 1.5;
+            color: #222;
+        }
+
+        main {
+            max-width: 900px;
+        }
+
+        section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        form {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        label {
+            display: grid;
+            gap: 0.25rem;
+        }
+
+        input, select, textarea, button {
+            font: inherit;
+            padding: 0.5rem;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        button {
+            width: fit-content;
+            cursor: pointer;
+        }
+
+        ul {
+            padding-left: 1.25rem;
+        }
+
+        .task-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .result-box {
+            white-space: pre-wrap;
+            background: #f7f7f7;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0.75rem;
+        }
+
+        .status {
+            margin-top: 0.5rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Task Manager</h1>
+
+    <section>
+        <h2>Tasks</h2>
+        <button id="refreshTasksButton" type="button">Refresh Tasks</button>
+        <div class="status" id="tasksStatus"></div>
+        <ul id="tasksList"></ul>
+    </section>
+
+    <section>
+        <h2>Create Task</h2>
+        <form id="createTaskForm">
+            <label>
+                Title
+                <input id="title" name="title" required>
+            </label>
+
+            <label>
+                Description
+                <textarea id="description" name="description"></textarea>
+            </label>
+
+            <label>
+                Status
+                <select id="status" name="status" required>
+                    <option value="TODO">TODO</option>
+                    <option value="IN_PROGRESS">IN_PROGRESS</option>
+                    <option value="DONE">DONE</option>
+                </select>
+            </label>
+
+            <label>
+                Priority
+                <select id="priority" name="priority" required>
+                    <option value="LOW">LOW</option>
+                    <option value="MEDIUM" selected>MEDIUM</option>
+                    <option value="HIGH">HIGH</option>
+                </select>
+            </label>
+
+            <label>
+                Due Date
+                <input id="dueDate" name="dueDate" type="date">
+            </label>
+
+            <button type="submit">Create Task</button>
+            <div class="status" id="createTaskStatus"></div>
+        </form>
+    </section>
+
+    <section>
+        <h2>Suggest Task</h2>
+        <form id="suggestTaskForm">
+            <label>
+                Prompt
+                <textarea id="prompt" name="prompt" required></textarea>
+            </label>
+
+            <button type="submit">Suggest Task</button>
+            <div class="status" id="suggestTaskStatus"></div>
+        </form>
+
+        <h3>Suggestion Result</h3>
+        <div class="result-box" id="suggestionResult">No suggestion yet.</div>
+    </section>
+</main>
+
+<script>
+    const tasksList = document.getElementById("tasksList");
+    const tasksStatus = document.getElementById("tasksStatus");
+    const createTaskForm = document.getElementById("createTaskForm");
+    const createTaskStatus = document.getElementById("createTaskStatus");
+    const suggestTaskForm = document.getElementById("suggestTaskForm");
+    const suggestTaskStatus = document.getElementById("suggestTaskStatus");
+    const suggestionResult = document.getElementById("suggestionResult");
+    const refreshTasksButton = document.getElementById("refreshTasksButton");
+
+    async function loadTasks() {
+        tasksStatus.textContent = "Loading tasks...";
+        try {
+            const response = await fetch("/tasks");
+            if (!response.ok) {
+                throw new Error("Failed to load tasks");
+            }
+
+            const tasks = await response.json();
+            renderTasks(tasks);
+            tasksStatus.textContent = `${tasks.length} task(s) loaded.`;
+        } catch (error) {
+            tasksStatus.textContent = error.message;
+        }
+    }
+
+    function renderTasks(tasks) {
+        tasksList.innerHTML = "";
+
+        if (tasks.length === 0) {
+            const emptyItem = document.createElement("li");
+            emptyItem.textContent = "No tasks yet.";
+            tasksList.appendChild(emptyItem);
+            return;
+        }
+
+        tasks.forEach((task) => {
+            const item = document.createElement("li");
+            item.className = "task-item";
+            item.textContent =
+                `${task.title} | status=${task.status} | priority=${task.priority} | dueDate=${task.dueDate ?? "n/a"}`;
+            tasksList.appendChild(item);
+        });
+    }
+
+    createTaskForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        createTaskStatus.textContent = "Creating task...";
+
+        const formData = new FormData(createTaskForm);
+        const payload = {
+            title: formData.get("title"),
+            description: formData.get("description"),
+            status: formData.get("status"),
+            priority: formData.get("priority"),
+            dueDate: formData.get("dueDate") || null
+        };
+
+        try {
+            const response = await fetch("/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to create task");
+            }
+
+            createTaskStatus.textContent = "Task created.";
+            createTaskForm.reset();
+            document.getElementById("status").value = "TODO";
+            document.getElementById("priority").value = "MEDIUM";
+            await loadTasks();
+        } catch (error) {
+            createTaskStatus.textContent = error.message;
+        }
+    });
+
+    suggestTaskForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        suggestTaskStatus.textContent = "Requesting suggestion...";
+
+        const formData = new FormData(suggestTaskForm);
+        const payload = { prompt: formData.get("prompt") };
+
+        try {
+            const response = await fetch("/tasks/suggest", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to suggest task");
+            }
+
+            const suggestion = await response.json();
+            suggestionResult.textContent = JSON.stringify(suggestion, null, 2);
+            suggestTaskStatus.textContent = "Suggestion received.";
+        } catch (error) {
+            suggestTaskStatus.textContent = error.message;
+        }
+    });
+
+    refreshTasksButton.addEventListener("click", loadTasks);
+
+    loadTasks();
+</script>
+</body>
+</html>

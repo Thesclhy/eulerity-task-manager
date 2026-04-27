@@ -18,8 +18,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.eulerity.task_manager.dto.TaskSuggestResponse;
 import com.eulerity.task_manager.model.Priority;
+import com.eulerity.task_manager.model.Status;
 import com.eulerity.task_manager.service.TaskService;
 import com.eulerity.task_manager.service.TaskSuggestionService;
+
+import java.time.LocalDate;
 
 @WebMvcTest(TaskController.class)
 @Import(TaskSuggestionControllerTest.MockConfig.class)
@@ -41,7 +44,9 @@ class TaskSuggestionControllerTest {
         when(taskSuggestionService.suggest(Mockito.any())).thenReturn(new TaskSuggestResponse(
                 "Plan weekly applications",
                 "Block time for applications, follow-ups, and study sessions",
-                Priority.HIGH
+                LocalDate.of(2026, 5, 4),
+                Priority.HIGH,
+                Status.TODO
         ));
 
         mockMvc.perform(post("/tasks/suggest")
@@ -55,7 +60,9 @@ class TaskSuggestionControllerTest {
                 .andExpect(jsonPath("$.title").value("Plan weekly applications"))
                 .andExpect(jsonPath("$.description")
                         .value("Block time for applications, follow-ups, and study sessions"))
-                .andExpect(jsonPath("$.priority").value("HIGH"));
+                .andExpect(jsonPath("$.dueDate").value("2026-05-04"))
+                .andExpect(jsonPath("$.priority").value("HIGH"))
+                .andExpect(jsonPath("$.status").value("TODO"));
     }
 
     @TestConfiguration
