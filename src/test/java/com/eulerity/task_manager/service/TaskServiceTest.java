@@ -2,7 +2,6 @@ package com.eulerity.task_manager.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -115,11 +114,12 @@ class TaskServiceTest {
 
     @Test
     void delete_removesTaskById() {
-        doNothing().when(taskRepository).deleteById(1L);
+        Task existingTask = task(1L, "Prepare interview packet", "Draft examples", Status.TODO, Priority.HIGH);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(existingTask));
 
         taskService.delete(1L);
 
-        verify(taskRepository).deleteById(1L);
+        verify(taskRepository).delete(existingTask);
     }
 
     private Task task(Long id, String title, String description, Status status, Priority priority) {

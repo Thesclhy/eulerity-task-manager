@@ -72,6 +72,19 @@
             margin-top: 0.5rem;
             color: #555;
         }
+
+        .warning-box {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: #fff4db;
+            border: 1px solid #e2b74a;
+            border-radius: 4px;
+            color: #6e4d00;
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -123,6 +136,7 @@
 
             <button type="submit">Create Task</button>
             <div class="status" id="createTaskStatus"></div>
+            <div class="warning-box hidden" id="createTaskNotification"></div>
         </form>
     </section>
 
@@ -148,6 +162,7 @@
     const tasksStatus = document.getElementById("tasksStatus");
     const createTaskForm = document.getElementById("createTaskForm");
     const createTaskStatus = document.getElementById("createTaskStatus");
+    const createTaskNotification = document.getElementById("createTaskNotification");
     const suggestTaskForm = document.getElementById("suggestTaskForm");
     const suggestTaskStatus = document.getElementById("suggestTaskStatus");
     const suggestionResult = document.getElementById("suggestionResult");
@@ -191,6 +206,8 @@
     createTaskForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         createTaskStatus.textContent = "Creating task...";
+        createTaskNotification.textContent = "";
+        createTaskNotification.classList.add("hidden");
 
         const formData = new FormData(createTaskForm);
         const payload = {
@@ -212,13 +229,22 @@
                 throw new Error("Failed to create task");
             }
 
-            createTaskStatus.textContent = "Task created.";
+            const createdResponse = await response.json();
+            const createdTask = createdResponse.task;
+
+            createTaskStatus.textContent = `Task created: ${createdTask.title}.`;
+            if (createdResponse.notification) {
+                createTaskNotification.textContent = createdResponse.notification.message;
+                createTaskNotification.classList.remove("hidden");
+            }
             createTaskForm.reset();
             document.getElementById("status").value = "TODO";
             document.getElementById("priority").value = "MEDIUM";
             await loadTasks();
         } catch (error) {
             createTaskStatus.textContent = error.message;
+            createTaskNotification.textContent = "";
+            createTaskNotification.classList.add("hidden");
         }
     });
 

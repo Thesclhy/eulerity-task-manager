@@ -28,6 +28,7 @@ import com.eulerity.task_manager.model.Priority;
 import com.eulerity.task_manager.model.Status;
 import com.eulerity.task_manager.service.TaskService;
 import com.eulerity.task_manager.service.TaskSuggestionService;
+import com.eulerity.task_manager.service.TaskUrgencyNotificationService;
 
 @WebMvcTest(TaskController.class)
 @Import(TaskControllerIntegrationTest.MockConfig.class)
@@ -39,9 +40,13 @@ class TaskControllerIntegrationTest {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private TaskUrgencyNotificationService taskUrgencyNotificationService;
+
     @BeforeEach
     void resetMocks() {
         Mockito.reset(taskService);
+        Mockito.reset(taskUrgencyNotificationService);
     }
 
     @Test
@@ -53,6 +58,7 @@ class TaskControllerIntegrationTest {
                 Status.TODO,
                 Priority.HIGH
         ));
+        when(taskUrgencyNotificationService.createNotificationForCurrentWorkload()).thenReturn(null);
 
         mockMvc.perform(post("/tasks")
                         .contentType(APPLICATION_JSON)
@@ -66,10 +72,11 @@ class TaskControllerIntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.title").value("Prepare interview packet"))
-                .andExpect(jsonPath("$.status").value("TODO"))
-                .andExpect(jsonPath("$.priority").value("HIGH"));
+                .andExpect(jsonPath("$.task.id").value(1))
+                .andExpect(jsonPath("$.task.title").value("Prepare interview packet"))
+                .andExpect(jsonPath("$.task.status").value("TODO"))
+                .andExpect(jsonPath("$.task.priority").value("HIGH"))
+                .andExpect(jsonPath("$.notification").isEmpty());
     }
 
     @Test
@@ -160,6 +167,11 @@ class TaskControllerIntegrationTest {
         @Bean
         TaskSuggestionService taskSuggestionService() {
             return Mockito.mock(TaskSuggestionService.class);
+        }
+
+        @Bean
+        TaskUrgencyNotificationService taskUrgencyNotificationService() {
+            return Mockito.mock(TaskUrgencyNotificationService.class);
         }
     }
 }

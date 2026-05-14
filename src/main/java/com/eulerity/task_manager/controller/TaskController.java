@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eulerity.task_manager.dto.TaskRequest;
+import com.eulerity.task_manager.dto.TaskCreationResponse;
 import com.eulerity.task_manager.dto.TaskResponse;
 import com.eulerity.task_manager.dto.TaskSuggestRequest;
 import com.eulerity.task_manager.dto.TaskSuggestResponse;
 import com.eulerity.task_manager.service.TaskService;
 import com.eulerity.task_manager.service.TaskSuggestionService;
+import com.eulerity.task_manager.service.TaskUrgencyNotificationService;
 
 import jakarta.validation.Valid;
 
@@ -28,15 +30,25 @@ public class TaskController {
 
     private final TaskService taskService;
     private final TaskSuggestionService taskSuggestionService;
+    private final TaskUrgencyNotificationService taskUrgencyNotificationService;
 
-    public TaskController(TaskService taskService, TaskSuggestionService taskSuggestionService) {
+    public TaskController(
+            TaskService taskService,
+            TaskSuggestionService taskSuggestionService,
+            TaskUrgencyNotificationService taskUrgencyNotificationService
+    ) {
         this.taskService = taskService;
         this.taskSuggestionService = taskSuggestionService;
+        this.taskUrgencyNotificationService = taskUrgencyNotificationService;
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponse> create(@Valid @RequestBody TaskRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(taskService.create(request));
+    public ResponseEntity<TaskCreationResponse> create(@Valid @RequestBody TaskRequest request) {
+        TaskResponse task = taskService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new TaskCreationResponse(
+                task,
+                taskUrgencyNotificationService.createNotificationForCurrentWorkload()
+        ));
     }
 
     @GetMapping

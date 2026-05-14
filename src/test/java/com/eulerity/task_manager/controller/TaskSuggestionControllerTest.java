@@ -1,6 +1,7 @@
 package com.eulerity.task_manager.controller;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,6 +22,7 @@ import com.eulerity.task_manager.model.Priority;
 import com.eulerity.task_manager.model.Status;
 import com.eulerity.task_manager.service.TaskService;
 import com.eulerity.task_manager.service.TaskSuggestionService;
+import com.eulerity.task_manager.service.TaskUrgencyNotificationService;
 
 import java.time.LocalDate;
 
@@ -65,6 +67,20 @@ class TaskSuggestionControllerTest {
                 .andExpect(jsonPath("$.status").value("TODO"));
     }
 
+    @Test
+    void postTasksSuggest_withBlankPrompt_returnsBadRequest() throws Exception {
+        mockMvc.perform(post("/tasks/suggest")
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "prompt": "   "
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(taskSuggestionService);
+    }
+
     @TestConfiguration
     static class MockConfig {
 
@@ -76,6 +92,11 @@ class TaskSuggestionControllerTest {
         @Bean
         TaskSuggestionService taskSuggestionService() {
             return Mockito.mock(TaskSuggestionService.class);
+        }
+
+        @Bean
+        TaskUrgencyNotificationService taskUrgencyNotificationService() {
+            return Mockito.mock(TaskUrgencyNotificationService.class);
         }
     }
 }

@@ -258,6 +258,88 @@ This confirmed that POST /tasks/suggest works without an API key and returns str
 
 ## 5. Minimal static UI
 
+## 6. Urgency notification feature
+
+### My prompt
+
+Add an urgency notification feature for task creation using a tests-first approach.
+
+Requirements:
+
+- Only `POST /tasks` may change response shape.
+- Score active tasks using:
+  - `HIGH`: `+2`
+  - overdue: `+3`
+  - due today: `+2`
+  - due within 7 days: `+1`
+  - `DONE`: ignored
+- Return a notification only when total score is `>= 6`.
+- Update the static UI so the create-task flow shows the warning message when present.
+- Keep other task endpoints unchanged.
+- Run `./mvnw test`.
+
+### Codex response
+
+I started by adding failing tests for the new behavior before implementing production code. The new test
+coverage documented the urgency scoring rules, the `POST /tasks` wrapper response, and regression coverage
+for the unchanged `GET`, `PUT`, and `DELETE` contracts.
+
+I then implemented:
+
+- `TaskUrgencyNotificationService` to score active tasks and produce an optional notification
+- `TaskCreationResponse` and `TaskUrgencyNotificationResponse` DTOs
+- `POST /tasks` wrapper responses of the form:
+  - `{ "task": ..., "notification": null }`
+  - `{ "task": ..., "notification": { "score": ..., "urgentTaskCount": ..., "message": ... } }`
+- static UI handling in `src/main/resources/static/index.html` so the create-task form reads `response.task`
+  and displays `response.notification.message` in a warning box when present
+
+Other task endpoints were left unchanged.
+
+### Result
+
+`./mvnw test` passed after the feature was completed:
+
+- Tests run: `28`
+- Failures: `0`
+- Errors: `0`
+
+## 7. Configurable urgency threshold
+
+### My prompt
+
+Make the urgency notification threshold configurable without changing the scoring rules or response shapes.
+
+Requirements:
+
+- Move the hardcoded threshold into configuration
+- Use `task.urgency.notification-threshold`
+- Keep the default value at `6`
+- Add test coverage for custom threshold behavior
+- Run `./mvnw test`
+
+### Codex response
+
+I extracted the threshold from hardcoded service logic so the urgency notification cutoff can be adjusted
+through configuration without touching code.
+
+What changed:
+
+- Added `task.urgency.notification-threshold=6` to `application.properties`
+- Updated `TaskUrgencyNotificationService` to read it with
+  `@Value("${task.urgency.notification-threshold:6}")`
+- Added a service test verifying that a lower custom threshold triggers a notification for a lower score
+
+The scoring rules and API response shapes remained unchanged.
+
+### Result
+
+`./mvnw test` passed after the configuration change:
+
+- Tests run: `29`
+- Failures: `0`
+- Errors: `0`
+
 ### My prompt
 
 Now add a minimal static UI at src/main/resources/static/index.html.
